@@ -19,23 +19,12 @@ def im2col(A, B, skip):
 
     # Get all actual indices & index into input array for final output
     out = np.take(A, start_idx.ravel()[:, None] + offset_idx[::skip[0], ::skip[1]].ravel())
+    return out
 
 
-# def convolve():
-#
-A = np.array([[[1, 1, 2],
-               [1, 2, 3],
-               [2, 3, 1]],
-
-              [[1, 2, 2],
-               [1, 2, 3],
-               [2, 3, 1]]
-             ])
-B = np.array([[[1, 1, 1],
-               [1, 1, 1]],
-
-              [[1, 1, 1],
-               [0, 0, 0]]
-              ])
-print(np.array([np.dot(B[i], A[i]) for i in range(len(A))]))
-print(np.sum(np.array([np.dot(B[i], A[i]) for i in range(len(A))]), axis=2))
+def convolve(layer, filters, filter_size, stride=[1, 1]):
+    layer = np.pad(layer,
+                   ((int(filter_size[0]/2), int(filter_size[0]/2)), (int(filter_size[1]/2), int(filter_size[1]/2))),
+                   mode="constant")
+    layer = im2col(layer, filter_size, stride)
+    return np.sum(np.array([np.dot(filters[i], layer[i]) for i in range(len(layer))]), axis=2)
