@@ -1,4 +1,6 @@
 import numpy as np
+from skimage.util.shape import view_as_blocks
+import math
 
 
 def im2col(A, B, skip):
@@ -23,8 +25,29 @@ def im2col(A, B, skip):
 
 
 def convolve(layer, filters, filter_size, stride=[1, 1]):
-    layer = np.pad(layer,
-                   ((int(filter_size[0]/2), int(filter_size[0]/2)), (int(filter_size[1]/2), int(filter_size[1]/2))),
-                   mode="constant")
+    layer_size = len(layer)
+    new_layer_size = (len(filters[0]),
+                      int((len(layer[0]) - filter_size[0]) / stride[0] + 1),
+                      int((len(layer[0][0]) - filter_size[1]) / stride[1] + 1))
+    # print(layer)
     layer = im2col(layer, filter_size, stride)
-    return np.sum(np.array([np.dot(filters[i], layer[i]) for i in range(len(layer))]), axis=2)
+    # print(layer)
+    layer = np.reshape(layer, (layer_size, filter_size[0] * filter_size[1], -1))
+    # print(layer)
+    # print(filters)
+    new_layer = np.sum(np.array([np.dot(filters[i], layer[i]) for i in range(len(layer))]), axis=0)
+    # print(new_layer)
+    return np.resize(new_layer, new_layer_size)
+
+
+def max_pool(layer, size, stride=None):
+    if stride is None:
+        stride = size
+    new_layer_size = (len(layer),
+                      int((len(layer[0]) - size[0]) / stride[0] + 1),
+                      int((len(layer[0][0]) - size[1]) / stride[1] + 1))
+    layer = im2col(layer, size, stride)
+    layer = np.amax(np.reshape(layer, (new_layer_size[0], size[0] * size[1], -1)), axis=1)
+    layer = np.resize(layer, new_layer_size)
+    return layer
+
