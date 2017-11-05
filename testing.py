@@ -1,23 +1,22 @@
 import numpy as np
 from cnn_model import *
 
-layer = np.random.random_integers(-10, 10, size=(3, 10, 10))
+layer = np.random.random_integers(-10, 10, size=(1, 100, 100))
 filter_size = [2, 3]
 stride = [2, 3]
-layer = np.pad(layer,
-               ((0, 0), (int(filter_size[0] / 2), int(filter_size[0] / 2)),
-                (int(filter_size[1] / 2), int(filter_size[1] / 2))),
-               mode="constant")
 # first dim is the current layer size, second dim is the next layer size, and third dim is the total filter size
-filters = np.random.random_integers(-5, 5, size=(3, 2, 6))
-print(layer)
-print(filters)
-c1 = convolve(layer, filters, filter_size, stride=stride)
-print(c1)
+filters = [np.random.random_integers(-5, 5, size=(3, 2, 6)), np.random.random_integers(-5, 5, size=(2, 5, 6))]
+
+c1 = convolve(layer, filters[0], filter_size, stride=stride)
 m1 = max_pool(c1, [2, 2])
-print(m1)
 r1 = relu_layer(m1)
-print(r1)
+
+c2 = convolve(r1, filters[1], filter_size, stride=stride)
+m2 = max_pool(c2, [2, 2])
+r2 = relu_layer(m2)
+
+dm2 = back_relu(m2, 1)
+dc2 = back_pool(c2, m2, dm2, [2, 2])
 
 '''
 A = np.array([[[1, 1, 2],

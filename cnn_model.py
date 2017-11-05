@@ -26,6 +26,8 @@ def im2col(A, B, skip):
 
 def convolve(layer, filters, filter_size, stride=[1, 1]):
     layer_size = len(layer)
+    layer = pad_layer(layer, [(int(filter_size[0] / 2), int(filter_size[0] / 2)),
+                              (int(filter_size[1] / 2), int(filter_size[1] / 2))])
     new_layer_size = (len(filters[0]),
                       int((len(layer[0]) - filter_size[0]) / stride[0] + 1),
                       int((len(layer[0][0]) - filter_size[1]) / stride[1] + 1))
@@ -43,6 +45,8 @@ def convolve(layer, filters, filter_size, stride=[1, 1]):
 def max_pool(layer, size, stride=None):
     if stride is None:
         stride = size
+    layer = pad_layer(layer, [(0, -len(layer[0]) % size[0]),
+                              (0, -len(layer[0][0]) % size[1])])
     new_layer_size = (len(layer),
                       int((len(layer[0]) - size[0]) / stride[0] + 1),
                       int((len(layer[0][0]) - size[1]) / stride[1] + 1))
@@ -53,5 +57,29 @@ def max_pool(layer, size, stride=None):
 
 
 def relu_layer(layer):
-    gradients = np.maximum(layer, 0.01*layer)
+    gradients = np.maximum(layer, layer*0.01)
     return gradients
+
+
+def back_relu(layer, deriv):
+    layer = np.where(layer < 0, 0.01, 1)
+    return np.multiply(layer, deriv)
+
+
+# TODO get the backpropagation for pooling to work
+def back_pool(layer, next_layer, deriv, size, stride=None):
+    if stride is None:
+        stride = size
+    layer = pad_layer(layer, [(0, -len(layer[0]) % size[0]),
+                              (0, -len(layer[0][0]) % size[1])])
+    new_layer_size = (len(layer),
+                      int((len(layer[0]) - size[0]) / stride[0] + 1),
+                      int((len(layer[0][0]) - size[1]) / stride[1] + 1))
+    layer = im2col(layer, size, stride)
+    layer = np.reshape(layer, (new_layer_size[0], size[0] * size[1], -1))
+
+    return np.multiply(layer, deriv)
+
+
+def pad_layer(layer, size):
+    return np.pad(layer, ((0, 0), (size[0]), (size[1])), mode="constant")
