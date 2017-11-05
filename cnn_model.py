@@ -51,3 +51,7 @@ def max_pool(layer, size, stride=None):
     layer = np.resize(layer, new_layer_size)
     return layer
 
+
+def relu_layer(layer):
+    gradients = np.maximum(layer, 0.01*layer)
+    return gradients
