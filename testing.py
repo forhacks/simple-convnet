@@ -17,7 +17,9 @@ r2 = relu_layer(m2)
 
 dm2 = back_relu(m2, 1)
 dc2 = back_pool(c2, m2, dm2, [2, 2])
+dr1 = back_conv(r1, dc2, filter_size, stride)
 
+print(dr1)
 '''
 A = np.array([[[1, 1, 2],
                [1, 2, 3],

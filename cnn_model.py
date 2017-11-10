@@ -70,15 +70,28 @@ def back_relu(layer, deriv):
 def back_pool(layer, next_layer, deriv, size, stride=None):
     if stride is None:
         stride = size
-    layer = pad_layer(layer, [(0, -len(layer[0]) % size[0]),
-                              (0, -len(layer[0][0]) % size[1])])
-    new_layer_size = (len(layer),
-                      int((len(layer[0]) - size[0]) / stride[0] + 1),
-                      int((len(layer[0][0]) - size[1]) / stride[1] + 1))
-    layer = im2col(layer, size, stride)
-    layer = np.reshape(layer, (new_layer_size[0], size[0] * size[1], -1))
+    repeated = np.repeat(np.repeat(next_layer, size[1], axis=2), size[0], axis=1)
+    repeated = repeated[::, :len(layer[0]):, :len(layer[0][0]):]
+    layer = layer - repeated
+    layer = np.where(layer < 0, 0, 1)
+    repeated = np.repeat(np.repeat(deriv, size[1], axis=2), size[0], axis=1)
+    repeated = repeated[::, :len(layer[0]):, :len(layer[0][0]):]
+    prev_layer = np.multiply(layer, repeated)
+    return prev_layer
 
-    return np.multiply(layer, deriv)
+
+def back_conv(layer, deriv, size, stride=[1, 1]):
+    derivW = np.resize(deriv, (len(deriv), len(deriv[0]) * len(deriv[0][0])))
+    print(deriv.shape)
+    print(derivW.shape)
+    dw = np.zeros((len(layer), len(deriv), size[0] * size[1]))
+    for i in range(len(layer)):
+        for j in range(len(deriv)):
+                dw[i][j] += convolve(np.array([layer[i]]),
+                                     np.array([[derivW[j]]]),
+                                     (deriv.shape[1], deriv.shape[2]),
+                                     stride=stride)
+    print(dw)
 
 
 def pad_layer(layer, size):
