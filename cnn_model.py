@@ -66,7 +66,6 @@ def back_relu(layer, deriv):
     return np.multiply(layer, deriv)
 
 
-# TODO get the backpropagation for pooling to work
 def back_pool(layer, next_layer, deriv, size, stride=None):
     if stride is None:
         stride = size
@@ -82,8 +81,6 @@ def back_pool(layer, next_layer, deriv, size, stride=None):
 
 def back_conv(layer, deriv, size, stride=[1, 1]):
     derivW = np.resize(deriv, (len(deriv), len(deriv[0]) * len(deriv[0][0])))
-    print(deriv.shape)
-    print(derivW.shape)
     dw = np.zeros((len(layer), len(deriv), size[0] * size[1]))
     for i in range(len(layer)):
         for j in range(len(deriv)):

@@ -3,7 +3,7 @@ from cnn_model import *
 
 layer = np.random.random_integers(-10, 10, size=(1, 100, 100))
 filter_size = [2, 3]
-stride = [2, 3]
+stride = [1, 1]
 # first dim is the current layer size, second dim is the next layer size, and third dim is the total filter size
 filters = [np.random.random_integers(-5, 5, size=(3, 2, 6)), np.random.random_integers(-5, 5, size=(2, 5, 6))]
 
@@ -17,7 +17,7 @@ r2 = relu_layer(m2)
 
 dm2 = back_relu(m2, 1)
 dc2 = back_pool(c2, m2, dm2, [2, 2])
-dr1 = back_conv(r1, dc2, filter_size, stride)
+dr1 = back_conv(r1, dc2, filter_size, stride=stride)
 
 print(dr1)
 '''
